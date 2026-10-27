@@ -188,6 +188,11 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <tr><td>195</td><td>Hand over only a step needing their own login or hands, after every route of yours is tried, in its shortest form, then verify the outcome.</td><td>judgment only</td><td>judgment: no hook can verify all agent-accessible routes were tried before handing over to the principal</td></tr>
 <tr><td>196</td><td>A recurring login-or-hands step gets engineered away, never an approval step.</td><td>judgment only</td><td>judgment: no hook can detect whether a recurring manual step was accepted rather than automated away</td></tr>
 </table></div>
+<h2>Three gaps to close first</h2>
+<p>1. Line 135: "Every spawned agent, including each agent call in a workflow, gets an explicitly chosen model, and effort where the call takes one." Close it with: install tier-guard.py from the free kit (Denies an agent spawn that does not choose a model and an effort, and a workflow agent() call with no model or effort key.).</p>
+<p>2. Line 136: "Tiering and fan-out guards nudge (fail open) or deny one specific thing, such as a spawn with no model chosen; they name their own source..." Close it with: install tier-guard.py from the free kit (Denies an agent spawn that does not choose a model and an effort, and a workflow agent() call with no model or effort key.).</p>
+<p>3. Line 13: "No: stop. Show the exact command and the exact target, and get an explicit yes first." Close it with: PreToolUse on Bash: deny execution of commands matching irreversible destructive patterns without prior approval.</p>
+<p>Order: hooks that deny an irreversible action first, then checks after the fact, then settings. Within a tier, the order of the file.</p>
 <h2>A settings.json fragment for the catalog matches</h2>
 <p>Merge this into the "hooks" object of your settings.json. Keep the hooks you already have. The scripts are in the free kit (<a href="https://github.com/steward-kit/steward-kit">https://github.com/steward-kit/steward-kit</a>) under hooks/ and go in ~/.claude/hooks/.</p>
 <pre class="card"><code>{
@@ -233,7 +238,7 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <ul>
 <li>Nothing from your repo was executed.</li>
 <li>The matches come from keyword matching, and the labels come from one model.</li>
-<li>There was no second reviewer.</li>
+<li>A second session read the report against the file before it went out. No person did.</li>
 <li>No hook was run, so none is shown to work on your files.</li>
 <li>It covers Claude Code 2.1.x only.</li>
 </ul>
