@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude Code operating-model audit</title>
+<meta name="description" content="Claude Code operating-model audit">
+<style>
+:root{color-scheme:light dark;--bg:#fbfaf7;--fg:#1d1d1b;--mut:#595853;--ln:#dcd9d0;--ac:#0b6b5c;--card:#f1efe8}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--mut:#a3a199;--ln:#33322e;--ac:#5fc9b4;--card:#1d1d1b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main,header,footer{max-width:42rem;margin:0 auto;padding:0 16px}
+header{padding-top:24px;padding-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
+header a.brand{font-weight:700;color:var(--fg);text-decoration:none}
+header nav a{margin-right:14px}
+a{color:var(--ac)}
+h1{font-size:1.9rem;line-height:1.2;margin:1.2rem 0 .6rem}
+h2{font-size:1.3rem;margin:2.2rem 0 .4rem;border-top:1px solid var(--ln);padding-top:1.2rem}
+h3{font-size:1.05rem;margin:1.2rem 0 .2rem}
+p,ul{margin:.6rem 0}
+.lead{font-size:1.15rem;color:var(--mut)}
+.price{font-weight:700}
+.btn{display:inline-block;padding:.55rem 1rem;border:1px solid var(--ac);border-radius:6px;text-decoration:none;font-weight:600;margin:.3rem .5rem .3rem 0}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:2px 16px 12px;margin:1rem 0}
+.nums{display:flex;gap:12px;flex-wrap:wrap;margin:.4rem 0}
+.nums span{background:var(--card);border:1px solid var(--ln);border-radius:6px;padding:.2rem .6rem;font-size:.95rem}
+.entry{border-top:1px solid var(--ln);padding-top:.8rem;margin-top:1.6rem}
+.date{color:var(--mut);font-size:.9rem}
+footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
+
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+</style></head><body>
+<header><a class="brand" href="../">steward-kit</a><nav><a href="../#kit">Kit</a><a href="../#products">Products</a><a href="../log/">Log</a></nav></header>
+<main>
+<p><a href="../">Back to the home page</a></p>
+<h1>Claude Code operating-model audit</h1>
+<p>A small Georgia company finds software teams that already use Claude Code by looking for a <code>CLAUDE.md</code> file in one of their public repositories. Then it reads that file and tells them what it actually enforces and what it only hopes to enforce. The Claude Code sessions wrote this page; an engineer reviewed it and decided it could ship.</p>
+<h2>What the problem is</h2>
+<p>A <code>CLAUDE.md</code> rule written in prose is a suggestion. Claude Code reads it, but nothing stops a session from skipping it under pressure. The steward-kit hooks exist to close that gap. There are twelve: three deny a bad tool call before it runs, one flags a write outside git right after it, and eight never block, they remind, re-inject or log. Most teams have the prose. Few have the hooks wired up.</p>
+<h2>Two tiers</h2>
+<p><strong>Audit, $499</strong></p>
+<p>Send us your <code>CLAUDE.md</code>, your <code>settings.json</code>, and any hooks you have wired. Within five business days we deliver a written report that covers:</p>
+<ul><li>which of your written rules are prose only, with no mechanical enforcement</li><li>which of the twelve steward-kit hooks would enforce or flag each one</li><li>what rules are missing entirely</li><li>a rendered <code>settings.json</code> you can apply directly</li></ul>
+<p>Order: AUDIT_URL</p>
+<p><strong>Audit plus install, $999</strong></p>
+<p>The report, plus the pro kit rendered into your profile, a doctor run that proves each gate denies a bad input, and two weeks of email support.</p>
+<p>Order: AUDIT_INSTALL_URL</p>
+<h2>How payment works</h2>
+<p>Payment goes through a Ko-fi commission, which takes PayPal. You pay first, then send your intake files.</p>
+<h2>Refunds</h2>
+<p>Full refund any time before you send your intake files. Full refund if the delivered config does not install on your machine and we cannot fix it within 14 days of delivery.</p>
+<h2>Who does the work</h2>
+<p>The Claude Code sessions of a small Georgia company read your files and write the report. An engineer reviews the findings and decides what ships. If you ask whether an AI did something, the answer is yes.</p>
+<h2>What this does not do</h2>
+<p>A passing doctor run means each gate denied its test input once. It does not prove every future session will follow the rules.</p>
+<p><a href="../">Back to the home page</a></p>
+</main>
+<footer>No tracking, no cookies, no third-party requests on this site.</footer>
+</body></html>
