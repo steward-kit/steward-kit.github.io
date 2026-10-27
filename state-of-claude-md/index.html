@@ -50,15 +50,15 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <p>Everything below is about the 492 CLAUDE.md files unless it says otherwise.</p>
 
 <h2>How many rules a file has</h2>
-<p>We count rule like lines with a keyword analyzer. The median CLAUDE.md has 8. The smallest has 0 and the largest has 525. A quarter of the files have more than 26, and one in ten has more than 57.</p>
-<p>These headline numbers come from the Oct 26 run with detector 78d355e. The same repositories re-scored on Oct 27 with the tightened detector 81321bb: median 6, 75th percentile 18.25, 20.3% with a hook command, 37.6% with a settings file. The table at the bottom carries both runs.</p>
+<p>We count rule like lines with a keyword analyzer. The median CLAUDE.md has 6. The smallest has 0 and the largest has 305. A quarter of the files have more than 18, and one in ten has more than 40. One in five repositories has a hook command and 37.6% have a settings file.</p>
+<p>These headline numbers come from the Oct 27 run with the tightened detector 81321bb. The first run, Oct 26 with detector 78d355e, scored the same repositories at a median of 8, a 75th percentile of 26, one in ten above 57 and a largest file of 525; the detector changed, the repositories did not. The table at the bottom carries both runs.</p>
 <div class="wrap"><table><tr><th>Rule like lines in the file</th><th>Files</th><th>Share of 492</th></tr>
-<tr><td>0</td><td>86</td><td>17.5%</td></tr>
-<tr><td>1 to 4</td><td>107</td><td>21.7%</td></tr>
-<tr><td>5 to 9</td><td>82</td><td>16.7%</td></tr>
-<tr><td>10 to 19</td><td>67</td><td>13.6%</td></tr>
-<tr><td>20 to 49</td><td>93</td><td>18.9%</td></tr>
-<tr><td>50 or more</td><td>57</td><td>11.6%</td></tr>
+<tr><td>0</td><td>103</td><td>20.9%</td></tr>
+<tr><td>1 to 4</td><td>120</td><td>24.4%</td></tr>
+<tr><td>5 to 9</td><td>84</td><td>17.1%</td></tr>
+<tr><td>10 to 19</td><td>68</td><td>13.8%</td></tr>
+<tr><td>20 to 49</td><td>81</td><td>16.5%</td></tr>
+<tr><td>50 or more</td><td>36</td><td>7.3%</td></tr>
 </table></div>
 
 <h2>What is enforced today</h2>
