@@ -49,7 +49,7 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <section id="res" class="hide" aria-live="polite">
 <h2>Result</h2>
 <p class="sum" id="sum"></p>
-<div class="wrap"><table id="tbl"><thead><tr><th>Line</th><th>Rule</th><th>Verdict</th><th>Enforced by</th><th>How</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="wrap"><table id="tbl"><thead><tr><th>Line</th><th>Rule</th><th>Verdict</th><th>Enforced by</th><th>Could be enforced by</th><th>How</th></tr></thead><tbody id="tb"></tbody></table></div>
 <div><button id="cp" type="button">Copy report as Markdown</button><button id="cps" type="button">Copy a two-line summary</button><span class="small" id="st"></span></div>
 <textarea id="mdbox" class="hide" readonly aria-label="Markdown report" style="min-height:8rem"></textarea>
 </section>
@@ -62,6 +62,17 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <li><strong>Prose only.</strong> Nothing mechanical enforces it today. The rule is a hope.</li>
 </ul>
 <p class="small">Limits. This is keyword matching, not understanding. A match means the kit has a hook in that area. It does not mean your hooks are installed, registered, or would fire on your exact wording. Every kit hook fails open, so an error in a hook lets the call through. The privacy lint is a script you run, not a hook, and it only catches identifiers you list. Two kit hooks, <code>tiering-score.py</code> and <code>session-prompt-log.py</code>, only measure and log, so they never change a verdict. The settings column comes from how Claude Code permissions work, not from the kit.</p>
+
+<h2>How the shape column is decided</h2>
+<p class="small">For lines nothing in the kit matches, the "Could be enforced by" column guesses what kind of mechanism could enforce the rule. The checks run in this order and the first one that fits wins. Words match whole words, case-insensitive.</p>
+<ul>
+<li><strong>Settings entry.</strong> The line contains any of: model, opus, sonnet, haiku, gpt, gemini, claude-3, claude-4, claude-5, permission, permissions, allow list, allowlist, deny list, denylist, ask before, sandbox, allowed tools, allowedtools, max turns, max-turns, effort.</li>
+<li><strong>Deny hook.</strong> The line contains a prohibition word (never, don&#x27;t, do not, no, must not, mustn&#x27;t, forbidden, avoid, prohibited, not allowed) together with a tool-shaped word (commit, push, force, merge, main branch, master, delete, rm, remove files, drop, edit, modify, write, touch, run, execute, install, deploy, prod, production, secret, credential, token, .env, migrate, database, sudo, git, npm, pip, curl, external, network, api key).</li>
+<li><strong>Check after the fact.</strong> The line contains an obligation word (always, must, before, after, every time, each time, run, make sure, ensure, verify) together with a check-shaped word (test, tests, lint, linter, format, formatter, build, compile, type-check, typecheck, review, changelog, docs, documentation, commit message, coverage, ci, pre-commit, snapshot, update the).</li>
+<li><strong>Judgment or style.</strong> The line contains any of: prefer, consider, try to, should be, keep it, readable, clean, idiomatic, concise, simple, style, tone, naming, comment, clear, consistent, meaningful, descriptive, good, best practice, when possible, where appropriate.</li>
+<li><strong>Unclear.</strong> Anything else.</li>
+</ul>
+<p class="small">A shape is a guess about what could enforce a rule, not a claim that nothing does.</p>
 
 <h2>Next</h2>
 <p><a href="https://github.com/steward-kit/steward-kit">The free kit</a> has the hooks this page refers to, under an MIT license.</p>
@@ -205,6 +216,24 @@ function classify(text){
   return {kind:'none', id:'none', hookName:'none', how:'Nothing mechanical enforces this today.'};
 }
 
+var SHAPE_GROUPS = {"setting": ["model", "opus", "sonnet", "haiku", "gpt", "gemini", "claude-3", "claude-4", "claude-5", "permission", "permissions", "allow list", "allowlist", "deny list", "denylist", "ask before", "sandbox", "allowed tools", "allowedtools", "max turns", "max-turns", "effort"], "prohib": ["never", "don't", "do not", "no", "must not", "mustn't", "forbidden", "avoid", "prohibited", "not allowed"], "tool": ["commit", "push", "force", "merge", "main branch", "master", "delete", "rm", "remove files", "drop", "edit", "modify", "write", "touch", "run", "execute", "install", "deploy", "prod", "production", "secret", "credential", "token", ".env", "migrate", "database", "sudo", "git", "npm", "pip", "curl", "external", "network", "api key"], "oblig": ["always", "must", "before", "after", "every time", "each time", "run", "make sure", "ensure", "verify"], "chk": ["test", "tests", "lint", "linter", "format", "formatter", "build", "compile", "type-check", "typecheck", "review", "changelog", "docs", "documentation", "commit message", "coverage", "ci", "pre-commit", "snapshot", "update the"], "judg": ["prefer", "consider", "try to", "should be", "keep it", "readable", "clean", "idiomatic", "concise", "simple", "style", "tone", "naming", "comment", "clear", "consistent", "meaningful", "descriptive", "good", "best practice", "when possible", "where appropriate"]};
+
+function shapeRe(list){
+  return new RegExp('(?:^|[^a-z0-9])(?:' + list.map(function(w){ return w.replace(/[.*+?^${}()|[\]\\\-]/g, '\\$&'); }).join('|') + ')(?![a-z0-9])');
+}
+var SHAPE_RE = {};
+Object.keys(SHAPE_GROUPS).forEach(function(k){ SHAPE_RE[k] = shapeRe(SHAPE_GROUPS[k]); });
+var SHAPE_LABEL = {deny:'a deny hook (PreToolUse)', check:'a check after the fact (PostToolUse or Stop)', setting:'a settings entry', judgment:'nothing automatic: judgment or style', unclear:'unclear'};
+
+function shape(line){
+  var t = norm(String(line));
+  if (SHAPE_RE.setting.test(t)) return 'setting';
+  if (SHAPE_RE.prohib.test(t) && SHAPE_RE.tool.test(t)) return 'deny';
+  if (SHAPE_RE.oblig.test(t) && SHAPE_RE.chk.test(t)) return 'check';
+  if (SHAPE_RE.judg.test(t)) return 'judgment';
+  return 'unclear';
+}
+
 function analyze(text){
   var lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
   var inFence = false, rows = [];
@@ -224,12 +253,13 @@ function analyze(text){
     for (var p = 0; p < pieces.length; p++) {
       if (!isRule(pieces[p])) continue;
       var c = classify(pieces[p]);
-      rows.push({line:n + 1, text:pieces[p], kind:c.kind, id:c.id, hookName:c.hookName, how:c.how});
+      rows.push({line:n + 1, text:pieces[p], kind:c.kind, id:c.id, hookName:c.hookName, how:c.how, shape:c.kind === 'none' ? shape(pieces[p]) : ''});
     }
   }
   var counts = {deny:0, nudge:0, setting:0, none:0};
-  rows.forEach(function(r){ counts[r.kind]++; });
-  return {rows:rows, counts:counts, total:rows.length, summary:summaryLine(rows.length, counts)};
+  var shapes = {deny:0, check:0, setting:0, judgment:0, unclear:0};
+  rows.forEach(function(r){ counts[r.kind]++; if (r.shape) shapes[r.shape]++; });
+  return {rows:rows, counts:counts, shapes:shapes, total:rows.length, summary:summaryLine(rows.length, counts)};
 }
 
 function summaryLine(total, c){
@@ -243,11 +273,13 @@ function cell(s){ return String(s).replace(/\|/g, '\\|').replace(/\s+/g, ' ').tr
 function toMarkdown(res){
   var out = ['# CLAUDE.md analysis', '', res.summary, ''];
   if (res.rows.length) {
-    out.push('| Line | Rule | Verdict | Enforced by | How |', '| --- | --- | --- | --- | --- |');
+    out.push('| Line | Rule | Verdict | Enforced by | Could be enforced by | How |', '| --- | --- | --- | --- | --- | --- |');
     res.rows.forEach(function(r){
-      out.push('| ' + r.line + ' | ' + cell(r.text) + ' | ' + KIND_LABEL[r.kind] + ' | ' + cell(r.hookName) + ' | ' + cell(r.how) + ' |');
+      out.push('| ' + r.line + ' | ' + cell(r.text) + ' | ' + KIND_LABEL[r.kind] + ' | ' + cell(r.hookName) + ' | ' + (r.shape ? SHAPE_LABEL[r.shape] : '-') + ' | ' + cell(r.how) + ' |');
     });
     out.push('');
+    var sh = res.shapes;
+    out.push('Of the ' + res.counts.none + ' lines nothing in the kit matches, by what could enforce them: a deny hook ' + sh.deny + ', a check after the fact ' + sh.check + ', a settings entry ' + sh.setting + ', judgment or style ' + sh.judgment + ', unclear ' + sh.unclear + '. Keyword-based, so treat it as a first read.', '');
   }
   out.push('Keyword matching only. A verdict names an area the free steward-kit covers. It does not prove your hooks are installed or would fire on your wording.');
   return out.join('\n') + '\n';
@@ -260,7 +292,7 @@ function toSummary(res){
   return l1 + '\n' + 'Check yours, nothing is uploaded: https://steward-kit.github.io/analyzer/';
 }
 
-if (typeof document === 'undefined') { globalThis.__analyzer = {analyze:analyze, toMarkdown:toMarkdown, toSummary:toSummary, CATALOG:CATALOG, EXAMPLE:EXAMPLE}; return; }
+if (typeof document === 'undefined') { globalThis.__analyzer = {analyze:analyze, toMarkdown:toMarkdown, toSummary:toSummary, CATALOG:CATALOG, EXAMPLE:EXAMPLE, shape:shape}; return; }
 
 var $ = function(id){ return document.getElementById(id); };
 var last = null;
@@ -275,8 +307,9 @@ function render(res){
     var b = document.createElement('td'); b.textContent = r.text;
     var c = document.createElement('td'); var tag = document.createElement('span'); tag.className = 'tag v-' + r.kind; tag.textContent = KIND_LABEL[r.kind]; c.appendChild(tag);
     var d = document.createElement('td'); var code = document.createElement('code'); code.textContent = r.hookName; d.appendChild(code);
+    var f = document.createElement('td'); f.textContent = r.shape ? SHAPE_LABEL[r.shape] : '-';
     var e = document.createElement('td'); e.textContent = r.how;
-    [a,b,c,d,e].forEach(function(x){ tr.appendChild(x); });
+    [a,b,c,d,f,e].forEach(function(x){ tr.appendChild(x); });
     tb.appendChild(tr);
   });
   $('tbl').classList.toggle('hide', res.rows.length === 0);
