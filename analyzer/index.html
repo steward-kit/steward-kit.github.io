@@ -50,7 +50,7 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <h2>Result</h2>
 <p class="sum" id="sum"></p>
 <div class="wrap"><table id="tbl"><thead><tr><th>Line</th><th>Rule</th><th>Verdict</th><th>Enforced by</th><th>How</th></tr></thead><tbody id="tb"></tbody></table></div>
-<div><button id="cp" type="button">Copy report as Markdown</button><span class="small" id="st"></span></div>
+<div><button id="cp" type="button">Copy report as Markdown</button><button id="cps" type="button">Copy a two-line summary</button><span class="small" id="st"></span></div>
 <textarea id="mdbox" class="hide" readonly aria-label="Markdown report" style="min-height:8rem"></textarea>
 </section>
 
@@ -253,7 +253,14 @@ function toMarkdown(res){
   return out.join('\n') + '\n';
 }
 
-if (typeof document === 'undefined') { globalThis.__analyzer = {analyze:analyze, toMarkdown:toMarkdown, CATALOG:CATALOG, EXAMPLE:EXAMPLE}; return; }
+function toSummary(res){
+  var n = res.total, c = res.counts;
+  var l1 = n === 0 ? 'My CLAUDE.md: no rule-like lines found.' :
+    'My CLAUDE.md: ' + n + ' rule-like lines. ' + (c.deny + c.nudge + c.setting) + ' have something in the free kit that can enforce them, ' + c.none + ' rely on the model remembering.';
+  return l1 + '\n' + 'Check yours, nothing is uploaded: https://steward-kit.github.io/analyzer/';
+}
+
+if (typeof document === 'undefined') { globalThis.__analyzer = {analyze:analyze, toMarkdown:toMarkdown, toSummary:toSummary, CATALOG:CATALOG, EXAMPLE:EXAMPLE}; return; }
 
 var $ = function(id){ return document.getElementById(id); };
 var last = null;
@@ -284,6 +291,18 @@ $('clr').addEventListener('click', function(){ $('in').value = ''; last = null; 
 $('cp').addEventListener('click', function(){
   if (!last) { last = analyze($('in').value); render(last); }
   var md = toMarkdown(last), st = $('st');
+  function fallback(){
+    var box = $('mdbox'); box.value = md; box.classList.remove('hide'); box.focus(); box.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    st.textContent = ok ? ' Copied.' : ' Copy failed. The report is selected below, copy it by hand.';
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(md).then(function(){ st.textContent = ' Copied.'; }, fallback);
+  } else { fallback(); }
+});
+$('cps').addEventListener('click', function(){
+  if (!last) { last = analyze($('in').value); render(last); }
+  var md = toSummary(last), st = $('st');
   function fallback(){
     var box = $('mdbox'); box.value = md; box.classList.remove('hide'); box.focus(); box.select();
     var ok = false; try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
