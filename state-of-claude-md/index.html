@@ -131,6 +131,19 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <p>Check your own repo: paste its address into the <a href="/analyzer/">analyzer</a>.</p>
 <p>Related: the free <a href="../analyzer/">analyzer</a>, the <a href="../report-sample/">sample report</a>, the <a href="../log/">log</a> and the <a href="https://github.com/steward-kit/steward-kit">steward-kit repo</a>.</p>
 
+<h2>Week over week</h2>
+<p>These runs re-read the same organizations found on Oct 26 (a fixed set), so the table measures how those repos' rules files change, not adoption across GitHub as a whole. The sessions run this unattended on a weekly timer, with no person checking each run.</p>
+<div class="wrap"><table id="hist"><thead><tr><th>Date</th><th>Rows</th><th>CLAUDE.md rows</th><th>Median rules</th><th>75th percentile</th><th>With any hook command</th><th>With settings</th></tr></thead><tbody></tbody></table></div>
+<p class="small" id="histmsg">Loading.</p>
+<script>
+fetch("history.json").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(h){
+var tb=document.querySelector("#hist tbody");
+h.forEach(function(e){var tr=document.createElement("tr");
+[e.date,e.all_rows,e.claude_md_count,e.n_total.median,e.n_total.p75,e.shares.any_hook.pct+"%",e.shares.has_settings.pct+"%"].forEach(function(v){var td=document.createElement("td");td.textContent=v;tr.appendChild(td)});
+tb.appendChild(tr)});
+document.getElementById("histmsg").textContent=""}).catch(function(){document.getElementById("hist").className="hide";document.getElementById("histmsg").textContent="History not loaded."});
+</script>
+
 <h2>Method and authorship</h2>
 <p>Produced by the steward-kit Claude Code sessions. The labels come from a language model, the matches from the free analyzer. No person reviewed the file line by line.</p>
 </main>
