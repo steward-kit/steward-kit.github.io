@@ -41,9 +41,11 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <p class="lead">Paste your <code>CLAUDE.md</code> or <code>AGENTS.md</code>. For each rule-like line, see whether anything can enforce it, or whether it is a hope written in prose.</p>
 <p>The Claude Code sessions wrote this page and maintain it. It is plain keyword matching against what the twelve free steward-kit hooks and a few built-in Claude Code settings actually do.</p>
 
+<form id="repo-form" style="margin:.5rem 0 1rem"><label for="repo-in"><strong>Or fetch a public repo</strong></label><div><input id="repo-in" type="text" placeholder="github.com/owner/repo" autocomplete="off" spellcheck="false" style="min-width:16rem"> <button type="submit">Fetch rules file</button></div><p class="small" id="repo-msg" aria-live="polite"></p></form>
+
 <label for="in"><strong>Your file</strong></label>
 <textarea id="in" spellcheck="false" placeholder="Paste your CLAUDE.md or AGENTS.md here"></textarea>
-<p class="priv">Your file is analyzed in this tab and never uploaded.</p>
+<p class="priv">Your file is analyzed in this tab and never uploaded. A repo lookup is one request from your browser to GitHub.</p>
 <div><button id="go" class="primary" type="button">Analyze</button><button id="ex" type="button">Load example</button><button id="clr" type="button">Clear</button></div>
 
 <section id="res" class="hide" aria-live="polite">
@@ -77,6 +79,7 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 <h2>Next</h2>
 <p><a href="https://github.com/steward-kit/steward-kit">The free kit</a> has the hooks this page refers to, under an MIT license.</p>
 <p><a href="https://github.com/steward-kit/steward-kit/tree/main/analyzer-action">The same check as a GitHub Action</a>: one step in a workflow, the report lands in the job summary, nothing is uploaded.</p>
+<p>Share a result: the address bar carries ?repo=owner/name after a fetch.</p>
 <p><a href="../audit/">The audit</a> reads your real CLAUDE.md and settings and writes up what is enforced and what is not.</p>
 <p><a href="../report-sample/">A sample of the $99 report</a>, run on the free kit's own rules file, shows what the written version looks like.</p>
 </main>
@@ -365,6 +368,53 @@ $('cps').addEventListener('click', function(){
     navigator.clipboard.writeText(md).then(function(){ st.textContent = ' Copied.'; }, fallback);
   } else { fallback(); }
 });
+})();
+</script>
+<script>
+(function(){
+var PATHS = ['CLAUDE.md', '.claude/CLAUDE.md', 'AGENTS.md', '.cursorrules'];
+var NAME = /^[A-Za-z0-9_.-]{1,100}$/;
+function parseRepo(s){
+  s = String(s || '').trim();
+  s = s.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/^github\.com\//i, '');
+  s = s.split(/[?#]/)[0].replace(/\/+$/, '');
+  var p = s.split('/');
+  if (p.length < 2) return null;
+  var owner = p[0], repo = p[1].replace(/\.git$/, '');
+  if (!NAME.test(owner) || !NAME.test(repo)) return null;
+  if (owner === '.' || owner === '..' || repo === '.' || repo === '..') return null;
+  return {owner: owner, repo: repo};
+}
+window.parseRepoInput = parseRepo;
+var inp = document.getElementById('repo-in'), msg = document.getElementById('repo-msg');
+if (!inp || !msg) return;
+function say(t){ msg.textContent = t; }
+async function run(raw, manual){
+  var r = parseRepo(raw);
+  if (!r) { say('That does not look like a GitHub repo. Use owner/repo or a github.com address.'); return; }
+  var id = r.owner + '/' + r.repo;
+  say('Fetching ' + id + '...');
+  try {
+    for (var i = 0; i < PATHS.length; i++) {
+      var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(r.owner) + '/' + encodeURIComponent(r.repo) + '/HEAD/' + PATHS[i].split('/').map(encodeURIComponent).join('/');
+      var res = await fetch(url, {credentials: 'omit'});
+      if (res.status === 200) {
+        document.getElementById('in').value = await res.text();
+        document.getElementById('go').click();
+        say('Analyzed ' + id + '/' + PATHS[i] + ', fetched by your browser from GitHub; nothing was uploaded anywhere.');
+        if (manual && window.history && history.replaceState) history.replaceState(null, '', '?repo=' + id);
+        return;
+      }
+      if (res.status !== 404) { say('GitHub answered ' + res.status + ' for ' + id + '. It may be rate limiting or the repo is not public. Try again later.'); return; }
+    }
+    say('No CLAUDE.md, .claude/CLAUDE.md, AGENTS.md or .cursorrules at the root of ' + id + '.');
+  } catch (e) {
+    say('Could not reach GitHub from your browser. Check your connection and try again.');
+  }
+}
+document.getElementById('repo-form').addEventListener('submit', function(ev){ ev.preventDefault(); run(inp.value, true); });
+var q = new URLSearchParams(location.search).get('repo');
+if (q) { inp.value = q; run(q, false); }
 })();
 </script>
 </body></html>
