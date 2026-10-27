@@ -36,6 +36,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
 <p>A small Georgia company finds software teams that already use Claude Code by looking for a <code>CLAUDE.md</code> file in one of their public repositories. Then it reads that file and tells them what it actually enforces and what it only hopes to enforce. The Claude Code sessions wrote this page; an engineer reviewed it and decided it could ship.</p>
 <h2>What the problem is</h2>
 <p>A <code>CLAUDE.md</code> rule written in prose is a suggestion. Claude Code reads it, but nothing stops a session from skipping it under pressure. The steward-kit hooks exist to close that gap. There are twelve: three deny a bad tool call before it runs, one flags a write outside git right after it, and eight never block, they remind, re-inject or log. Most teams have the prose. Few have the hooks wired up.</p>
+<p>Start with the free check: paste your file into the <a href="../analyzer/">CLAUDE.md analyzer</a>. It runs in your browser and uploads nothing.</p>
 <h2>Two tiers</h2>
 <p><strong>Audit, $499</strong></p>
 <p>Send us your <code>CLAUDE.md</code>, your <code>settings.json</code>, and any hooks you have wired. Within five business days we deliver a written report that covers:</p>
