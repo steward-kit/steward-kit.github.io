@@ -201,7 +201,25 @@ function splitSentences(s){
   return s.replace(/([.!?])\s+(?=[A-Z0-9*_`"(\[])/g, '$1\u0001').split('\u0001').map(function(x){return x.trim();}).filter(Boolean);
 }
 
-function isRule(t){ return MARKER.test(norm(t)); }
+var STRONG_CUE = /\b(never|always|must|do not|don't)\b/i;
+function isRule(t){
+  var s = String(t).trim();
+  if (!MARKER.test(norm(s))) return false;
+  var strong = STRONG_CUE.test(s);
+  // too short to be a rule (unless it opens with a hard cue)
+  if (s.split(/\s+/).length < 4 && !/^(no|never|do not|don't|always)\b/i.test(s)) return false;
+  // a heading-style label ending in a colon, unless it carries a hard cue
+  if (/:$/.test(s) && !/\b(never|always|must|do not|don't|every|should)\b/i.test(s)) return false;
+  // a lowercase start is a wrapped continuation fragment, unless it carries a hard cue
+  if (!/^[A-Z0-9"'(\[*]/.test(s) && !/\b(never|always|must|do not|don't|should)\b/i.test(s)) return false;
+  // mostly code or paths: dense with brackets, slashes, equals, underscores
+  if (!strong && (s.match(/[(){}\[\]=<>\/\\|_]/g) || []).length / s.length > 0.06) return false;
+  // a description opening with an article or subject word, without a hard cue
+  if (/^(This|These|There|The|It|Its|Their|They|We|Our|Each|A|An|Because|Since|That|Those|Not|Under|Replaced|Runs|Logic|Code|Staging|Orientation|Why|Both|Two)\b/.test(s) && !/\b(never|always|must|do not|don't|should)\b/i.test(s)) return false;
+  // arrows and :: point at things, they do not state rules
+  if (!strong && /[→↔←]|->|::/.test(s)) return false;
+  return true;
+}
 
 function entryHits(e, t){
   var any = e.any.length === 0 || e.any.some(function(r){return r.test(t);});
