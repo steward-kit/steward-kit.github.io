@@ -110,7 +110,8 @@
   "matched_any_file": {
    "n": 116,
    "pct": 23.6
-  }
+  },
+  "detector": "78d355e"
  },
  {
   "date": "2026-10-27",
@@ -223,6 +224,7 @@
   "matched_any_file": {
    "n": 93,
    "pct": 18.9
-  }
+  },
+  "detector": "81321bb"
  }
 ]

@@ -51,6 +51,7 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 
 <h2>How many rules a file has</h2>
 <p>We count rule like lines with a keyword analyzer. The median CLAUDE.md has 8. The smallest has 0 and the largest has 525. A quarter of the files have more than 26, and one in ten has more than 57.</p>
+<p>These headline numbers come from the Oct 26 run with detector 78d355e. The same repositories re-scored on Oct 27 with the tightened detector 81321bb: median 6, 75th percentile 18.25, 20.3% with a hook command, 37.6% with a settings file. The table at the bottom carries both runs.</p>
 <div class="wrap"><table><tr><th>Rule like lines in the file</th><th>Files</th><th>Share of 492</th></tr>
 <tr><td>0</td><td>86</td><td>17.5%</td></tr>
 <tr><td>1 to 4</td><td>107</td><td>21.7%</td></tr>
@@ -111,7 +112,7 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 </ul>
 
 <h2>The data</h2>
-<p><a class="btn" href="data.csv">Download data.csv</a> One row per organization, 667 rows. Columns:</p>
+<p><a class="btn" href="data.csv">Download data.csv</a> One row per organization. This file is the latest weekly run: <span id="latest">the weekly script replaces it every run</span>. Columns:</p>
 <ul>
 <li>login: the GitHub organization.</li>
 <li>repo: the repo we read.</li>
@@ -133,14 +134,16 @@ footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
 
 <h2>Week over week</h2>
 <p>These runs re-read the same organizations found on Oct 26 (a fixed set), so the table measures how those repos' rules files change, not adoption across GitHub as a whole. The sessions run this unattended on a weekly timer, with no person checking each run.</p>
-<div class="wrap"><table id="hist"><thead><tr><th>Date</th><th>Rows</th><th>CLAUDE.md rows</th><th>Median rules</th><th>75th percentile</th><th>With any hook command</th><th>With settings</th></tr></thead><tbody></tbody></table></div>
+<div class="wrap"><table id="hist"><thead><tr><th>Date</th><th>Rows</th><th>CLAUDE.md rows</th><th>Median rules</th><th>75th percentile</th><th>With any hook command</th><th>With settings</th><th>Detector</th></tr></thead><tbody></tbody></table></div>
+<p>The detector column names the version of the rule detector that scored the files. Rows with different detectors are not comparable. On the evening of Oct 26 the detector was tightened so that fewer prose lines count as rules; re-scoring the same files gave a median of 6 instead of 8 with the repositories unchanged. Compare rows only within one detector version. Each run's full table is at history/DATE.csv.</p>
 <p class="small" id="histmsg">Loading.</p>
 <script>
 fetch("history.json").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(h){
 var tb=document.querySelector("#hist tbody");
 h.forEach(function(e){var tr=document.createElement("tr");
-[e.date,e.all_rows,e.claude_md_count,e.n_total.median,e.n_total.p75,e.shares.any_hook.pct+"%",e.shares.has_settings.pct+"%"].forEach(function(v){var td=document.createElement("td");td.textContent=v;tr.appendChild(td)});
+[e.date,e.all_rows,e.claude_md_count,e.n_total.median,e.n_total.p75,e.shares.any_hook.pct+"%",e.shares.has_settings.pct+"%",e.detector||"unknown"].forEach(function(v){var td=document.createElement("td");td.textContent=v;tr.appendChild(td)});
 tb.appendChild(tr)});
+var L=h[h.length-1];document.getElementById("latest").textContent="run of "+L.date+", "+L.all_rows+" rows, detector "+L.detector;
 document.getElementById("histmsg").textContent=""}).catch(function(){document.getElementById("hist").className="hide";document.getElementById("histmsg").textContent="History not loaded."});
 </script>
 
