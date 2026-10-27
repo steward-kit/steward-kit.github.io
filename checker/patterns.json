@@ -1,0 +1,441 @@
+{
+ "version": 1,
+ "patterns": [
+  {
+   "id": "em-dash",
+   "name": "Long dash",
+   "kind": "regex",
+   "pattern": "\u2014|\u2013",
+   "severity": 2,
+   "tip": "Swap most long dashes for a period, comma or colon. Keep one per few paragraphs, only for a real interruption.",
+   "flags": "g"
+  },
+  {
+   "id": "spaced-dash",
+   "name": "Spaced hyphen used as a dash",
+   "kind": "regex",
+   "pattern": "\\S[ \\t]+--?[ \\t]+\\S",
+   "severity": 1,
+   "tip": "A spaced hyphen is a dash in disguise. Use a period or comma."
+  },
+  {
+   "id": "semicolon",
+   "name": "Semicolon",
+   "kind": "regex",
+   "pattern": ";",
+   "severity": 1,
+   "tip": "Semicolons stack up in generated drafts. Try a period.",
+   "flags": "g"
+  },
+  {
+   "id": "curly-quotes",
+   "name": "Curly quotes",
+   "kind": "regex",
+   "pattern": "[\u201c\u201d\u2018\u2019]",
+   "severity": 1,
+   "tip": "Fine if your editor curls quotes. A flag only when the whole text was pasted unedited.",
+   "flags": "g"
+  },
+  {
+   "id": "dash-stack",
+   "name": "Several dashes in one paragraph",
+   "kind": "regex",
+   "pattern": "\u2014[^\u2014\\n]*\u2014",
+   "severity": 2,
+   "tip": "Two dashes in one paragraph. Replace most with periods.",
+   "flags": "g"
+  },
+  {
+   "id": "colon-reveal",
+   "name": "Colon reveal",
+   "kind": "regex",
+   "pattern": "(?:^|[.!?]\\s+)(?:the\\s+)?(?:result|bottleneck|problem|answer|catch|truth|key|fix|upshot|takeaway|lesson|reality|solution|goal|point|secret)s?:\\s+\\S",
+   "severity": 2,
+   "tip": "Write the payoff as one plain sentence.",
+   "flags": "gim"
+  },
+  {
+   "id": "ai-vocab",
+   "name": "Machine vocabulary cluster",
+   "kind": "word",
+   "pattern": "delve[sd]?|delving|bolster(?:s|ed|ing)?|crucial(?:ly)?|garner(?:s|ed|ing)?|intricate|intricacies|meticulous(?:ly)?|underscor(?:e|es|ed|ing)|testament|vibrant|robust|leverag(?:e|es|ed|ing)|utiliz(?:e|es|ed|ing)|streamlin(?:e|es|ed|ing)|holistic|nuanced|pivotal|tapestry|paradigm|synerg(?:y|ies)|cutting-edge|game-changer|seamless(?:ly)?|multifaceted",
+   "severity": 2,
+   "tip": "One is a coincidence, three in a paragraph is a signature. Use the plain word."
+  },
+  {
+   "id": "ai-vocab-soft",
+   "name": "Soft machine vocabulary",
+   "kind": "word",
+   "pattern": "framework|landscape|ecosystem|navigat(?:e|es|ed|ing)|harness(?:es|ed|ing)?|elevat(?:e|es|ed|ing)|foster(?:s|ed|ing)?",
+   "severity": 1,
+   "tip": "Often fine alone. Check whether a plainer word works."
+  },
+  {
+   "id": "copula-dodge",
+   "name": "Copula avoidance",
+   "kind": "phrase",
+   "pattern": "serves as|serve as|stands as|stand as|acts as|functions as|represents a|marks a",
+   "severity": 2,
+   "tip": "Use \"is\"."
+  },
+  {
+   "id": "marketing-verbs",
+   "name": "Marketing verbs",
+   "kind": "word",
+   "pattern": "boast(?:s|ed|ing)?|showcas(?:e|es|ed|ing)|features a|boasts",
+   "severity": 2,
+   "tip": "Use \"has\", or describe the thing directly."
+  },
+  {
+   "id": "vague-connection",
+   "name": "Vague indirect connection",
+   "kind": "phrase",
+   "pattern": "in connection with|associated with|linked to|in collaboration with|in the context of",
+   "severity": 1,
+   "tip": "Say who did what."
+  },
+  {
+   "id": "not-just",
+   "name": "Not just X, but Y",
+   "kind": "regex",
+   "pattern": "\\b(?:not|isn['\u2019]t|aren['\u2019]t|don['\u2019]t|doesn['\u2019]t|wasn['\u2019]t)\\s+(?:just|only|merely|simply)\\b",
+   "severity": 2,
+   "tip": "State the real claim directly. Cut the denial."
+  },
+  {
+   "id": "negation-reframe",
+   "name": "It's not X, it's Y",
+   "kind": "regex",
+   "pattern": "\\b(?:it|this|that|we|they|you|i|there)(?:['\u2019](?:s|re|m|ve))?(?:\\s+(?:is|are|am))?\\s+not\\s+[^.!?\\n]{1,60}?[,\u2014\u2013;]\\s*(?:but\\s+)?(?:it|this|that|we|they|you|i|there)\\b",
+   "severity": 3,
+   "tip": "Say the point once, with no setup and negate."
+  },
+  {
+   "id": "rather-than",
+   "name": "Rather than hedge",
+   "kind": "phrase",
+   "pattern": "rather than",
+   "severity": 1,
+   "tip": "If the alternative nobody raised matters, say why. Otherwise cut it."
+  },
+  {
+   "id": "i-dont-just",
+   "name": "I don't just X, I Y",
+   "kind": "regex",
+   "pattern": "\\bI\\s+(?:don['\u2019]t|do not)\\s+(?:just|only|simply)\\b",
+   "severity": 3,
+   "tip": "Keep the second half and attach a number."
+  },
+  {
+   "id": "tricolon-adjectives",
+   "name": "Three adjectives in a row",
+   "kind": "regex",
+   "pattern": "\\b\\w+(?:able|ible|ive|ent|ant|ful|ous|al|ic|ly)\\b,\\s+\\w+(?:able|ible|ive|ent|ant|ful|ous|al|ic|ly)\\b,?\\s+(?:and|or)\\s+\\w+(?:able|ible|ive|ent|ant|ful|ous|al|ic|ly)\\b",
+   "severity": 1,
+   "tip": "Reflex triples. Keep a three only if you counted three things."
+  },
+  {
+   "id": "choppy-fragments",
+   "name": "Run of very short sentences",
+   "kind": "regex",
+   "pattern": "(?:^|(?<=[.!?]\\s))[A-Z][\\w'\u2019-]*(?:\\s[\\w'\u2019-]+){0,2}[.!]\\s+[A-Z][\\w'\u2019-]*(?:\\s[\\w'\u2019-]+){0,2}[.!]\\s+[A-Z][\\w'\u2019-]*(?:\\s[\\w'\u2019-]+){0,2}[.!]",
+   "severity": 2,
+   "tip": "Three tiny sentences in a row. Join them, or keep the one that earns a pause.",
+   "flags": "gm"
+  },
+  {
+   "id": "self-answered-question",
+   "name": "Question answered at once",
+   "kind": "regex",
+   "pattern": "[^.!?\\n]{4,70}\\?\\s+(?:[A-Z][^.!?\\n]{0,50}[.!])|\\bthe (?:real|actual|true|biggest|main) \\w+\\?|\\bever (?:wondered|asked yourself|wanted)\\b",
+   "severity": 2,
+   "tip": "Cut the question and lead with the answer."
+  },
+  {
+   "id": "recap-closer",
+   "name": "Recap closer",
+   "kind": "phrase",
+   "pattern": "in conclusion|to sum up|to summarize|in summary|overall, this|all in all|to wrap up|at the end of the day|in short,",
+   "severity": 2,
+   "tip": "Delete the recap or add one new fact."
+  },
+  {
+   "id": "hedge-phrases",
+   "name": "Hedging phrases",
+   "kind": "phrase",
+   "pattern": "can often|can be|may help|tends to|tend to|arguably|in some cases|to some extent|potentially|typically|generally speaking|it could be argued",
+   "severity": 1,
+   "tip": "Commit to the claim and give the evidence."
+  },
+  {
+   "id": "filler-transitions",
+   "name": "Filler transitions",
+   "kind": "phrase",
+   "pattern": "furthermore|moreover|additionally|crucially|notably|importantly|it's worth noting|it is worth noting|worth mentioning|indeed,",
+   "severity": 2,
+   "tip": "Delete, or use \"and\" and \"so\"."
+  },
+  {
+   "id": "ing-tackon",
+   "name": "Editorializing -ing clause",
+   "kind": "regex",
+   "pattern": ",\\s+(?:highlighting|showcasing|demonstrating|underscoring|reflecting|emphasizing|illustrating|reinforcing|ensuring|cementing|solidifying|exemplifying|signaling|contributing to|fostering|paving the way)\\b",
+   "severity": 3,
+   "tip": "Cut the clause or swap in a measured result."
+  },
+  {
+   "id": "heading-no-body",
+   "name": "Heading with no body",
+   "kind": "regex",
+   "pattern": "^#{1,6}[^\\n]*\\n+#{1,6}\\s",
+   "severity": 1,
+   "tip": "Add one real sentence under every heading.",
+   "flags": "gm"
+  },
+  {
+   "id": "showcasing-claim",
+   "name": "Claim of showing, no evidence",
+   "kind": "regex",
+   "pattern": "\\b(?:highlights?|demonstrates?|showcases?|reflects?|speaks? to|underscores?|illustrates?|exemplifies|reinforces?)\\s+(?:my|our|his|her|their|the)\\s+(?:\\w+\\s+){0,2}(?:skills?|abilities|ability|commitment|dedication|passion|expertise|strengths?|focus|capability|capabilities|importance)\\b",
+   "severity": 3,
+   "tip": "State the evidence instead of claiming it shows something."
+  },
+  {
+   "id": "significance-inflation",
+   "name": "Significance inflation",
+   "kind": "regex",
+   "pattern": "testament to|(?:played|plays|play) an? (?:key|crucial|vital|pivotal|significant|major) (?:role|part)|rich tapestry|indelible|enduring legacy|shaping the future|turning point|watershed|transformative|stands as an?",
+   "severity": 3,
+   "tip": "Name the checkable outcome."
+  },
+  {
+   "id": "vague-attribution",
+   "name": "Vague attribution",
+   "kind": "regex",
+   "pattern": "\\b(?:colleagues|experts|critics|observers|industry (?:leaders|experts)|studies|reviewers|clients|many people|some people)\\s+(?:have\\s+)?(?:say|said|praised|noted|argue|argued|suggest|suggested|show|shown|agree|called|described)\\b|widely (?:believed|regarded|considered)",
+   "severity": 2,
+   "tip": "Name the source or give the measured fact."
+  },
+  {
+   "id": "optimistic-close",
+   "name": "Faces-challenges, vague-optimism close",
+   "kind": "regex",
+   "pattern": "\\bdespite (?:these|the|its|such|any|some)\\s+(?:\\w+\\s+)?(?:challenges|setbacks|obstacles|limitations|hurdles)|always more to (?:build|do|learn)|where I am today|looking ahead|the future (?:looks|is) bright|excited (?:for|about) what(?:'s|\u2019s)? next|continues to (?:evolve|grow)",
+   "severity": 2,
+   "tip": "End on a concrete next step, or stop."
+  },
+  {
+   "id": "chat-register",
+   "name": "Chat register in a document",
+   "kind": "phrase",
+   "pattern": "let's dive|let\u2019s dive|let's explore|let's take a look|let's walk through|let's get started|let's jump in|let's look at",
+   "severity": 3,
+   "tip": "Write as a person describing their own work."
+  },
+  {
+   "id": "signposting",
+   "name": "Signposting",
+   "kind": "phrase",
+   "pattern": "let's break this down|let's unpack|here's the thing|here's where it gets|here's what you need to know|here's the kicker|buckle up|without further ado|dive into|deep dive",
+   "severity": 3,
+   "tip": "Just say the content."
+  },
+  {
+   "id": "sycophancy",
+   "name": "Flattery before the answer",
+   "kind": "regex",
+   "pattern": "\\b(?:great|excellent|fantastic|wonderful|good|fair|astute|insightful|smart)\\s+(?:question|point|instinct|idea|catch|observation|thinking)\\b|that['\u2019]s (?:such )?a (?:great|good|really)|you['\u2019]re (?:absolutely |completely )?right|you['\u2019]re really thinking|what a (?:great|fascinating|wonderful)",
+   "severity": 3,
+   "tip": "Skip the praise and answer. Disagree if the facts call for it."
+  },
+  {
+   "id": "over-politeness",
+   "name": "Apology hedging and sign-offs",
+   "kind": "phrase",
+   "pattern": "i hope this helps|hope that helps|i apologize for|apologies for any|sorry for any confusion|let me know if you have|feel free to reach out|don't hesitate to|happy to help|i'd be happy to",
+   "severity": 2,
+   "tip": "Cut the hedge and the sign-off. End on the last useful fact."
+  },
+  {
+   "id": "voice-fillers",
+   "name": "Humanizing filler sounds",
+   "kind": "regex",
+   "pattern": "\\b(?:um+|umm+|hmm+|uhh+|yee+ah|ahh+)\\b",
+   "severity": 1,
+   "tip": "Do not insert filler sounds to seem human. Speak plainly."
+  },
+  {
+   "id": "colon-list-dump",
+   "name": "Colon-led list dump",
+   "kind": "regex",
+   "pattern": "^[ \\t]*(?:\\*\\*)?[A-Z][\\w &/]{1,25}:(?:\\*\\*)?[ \\t]+[^,\\n:]+(?:,[^,\\n]+){3,}$",
+   "severity": 1,
+   "tip": "Write a real sentence or a real bulleted list.",
+   "flags": "gm"
+  },
+  {
+   "id": "bold-overuse",
+   "name": "Heavy bold in one paragraph",
+   "kind": "regex",
+   "pattern": "(?:\\*\\*[^*\\n]+\\*\\*[^*\\n]*){3,}",
+   "severity": 2,
+   "tip": "Bold at most one true key term per paragraph.",
+   "flags": "g"
+  },
+  {
+   "id": "bold-first-bullets",
+   "name": "Bold-first bullets",
+   "kind": "regex",
+   "pattern": "(?:^[ \\t]*[-*][ \\t]+\\*\\*[^*\\n]+\\*\\*[^\\n]*\\n){3,}",
+   "severity": 2,
+   "tip": "Bold only where it earns emphasis.",
+   "flags": "gm"
+  },
+  {
+   "id": "title-case-headers",
+   "name": "Title Case header",
+   "kind": "regex",
+   "pattern": "^#{1,6}[ \\t]+(?:[A-Z][a-z]+[ \\t]+){2,}[A-Z][a-z]+[ \\t]*$",
+   "severity": 1,
+   "tip": "Pick one heading style. Sentence case suits personal writing.",
+   "flags": "gm"
+  },
+  {
+   "id": "emoji",
+   "name": "Emoji",
+   "kind": "regex",
+   "pattern": "[\ud83c\udf00-\ud83e\udeff\u2600-\u27bf\u2b50]",
+   "severity": 1,
+   "tip": "Use real bullets. Keep at most one deliberate accent.",
+   "flags": "gu"
+  },
+  {
+   "id": "tool-artifacts",
+   "name": "Leftover chat tool artifacts",
+   "kind": "regex",
+   "pattern": "contentReference|oaicite|turn\\d+(?:search|view|file)\\d+|\\[oai_citation|utm_source=chatgpt\\.com|\u3010[^\u3011]*\u3011|\\[citation needed\\]",
+   "severity": 3,
+   "tip": "Delete pasted tool debris before sending."
+  },
+  {
+   "id": "alt-adjectives",
+   "name": "Adjective-stuffed alt text",
+   "kind": "regex",
+   "pattern": "\\balt=[\\\"'][^\\\"']*\\b(?:stunning|vibrant|sleek|beautiful|showcasing|captivating|gorgeous|dynamic)\\b",
+   "severity": 2,
+   "tip": "Describe what is visible, plainly."
+  },
+  {
+   "id": "diagram-inflation",
+   "name": "Inflated diagram labels",
+   "kind": "regex",
+   "pattern": "\\b(?:pivotal|central|critical|powerful|key)\\s+(?:\\w+\\s+)?(?:hub|engine|backbone|orchestrator|nerve center)\\b|powering the entire",
+   "severity": 2,
+   "tip": "Label by what it is and does."
+  },
+  {
+   "id": "hype-adjectives",
+   "name": "Hype adjectives",
+   "kind": "word",
+   "pattern": "passionate|results-driven|detail-oriented|self-starter|visionary|innovative|go-getter|team player|highly skilled|proven track record|dynamic",
+   "severity": 3,
+   "tip": "Open with your job function and one proof point."
+  },
+  {
+   "id": "jargon",
+   "name": "Corporate jargon",
+   "kind": "phrase",
+   "pattern": "thought leader|thought leadership|cross-functional|disruptor|moving the needle|move the needle|at the intersection of|seamlessly integrated|best-in-class|value-add|low-hanging fruit|circle back|world-class|drive innovation",
+   "severity": 2,
+   "tip": "Name the concrete thing the jargon stands for."
+  },
+  {
+   "id": "slogan-tagline",
+   "name": "Slogan tagline",
+   "kind": "regex",
+   "pattern": "\\bturning \\w+ into \\w+|\\btransforming \\w+ into \\w+|bridging the gap between|\\bwhere \\w+ meets \\w+",
+   "severity": 2,
+   "tip": "Use a plain title, one or two tools, one result."
+  },
+  {
+   "id": "closing-kicker",
+   "name": "Closing kicker",
+   "kind": "regex",
+   "pattern": "\\bbecause\\s+[^.!?\\n]{5,80}\\.\\s+(?:It|They|That|You)\\s+(?:should|must|will|won['\u2019]t|shouldn['\u2019]t)\\b[^.!?\\n]*\\.\\s*$|\\band that['\u2019]s (?:the|what)\\b",
+   "severity": 2,
+   "tip": "End on the last real fact.",
+   "flags": "gim"
+  },
+  {
+   "id": "punchy-not-fragments",
+   "name": "Not X. Not Y. Just Z.",
+   "kind": "regex",
+   "pattern": "\\bNot\\s+[^.!?\\n]{1,30}\\.\\s+Not\\s+[^.!?\\n]{1,30}\\.\\s+(?:Just|Only)\\b",
+   "severity": 3,
+   "tip": "Fold into one sentence.",
+   "flags": "g"
+  }
+ ],
+ "judgment": [
+  {
+   "id": "tricolon",
+   "name": "Rule of three",
+   "question": "Does every list in the piece have exactly three items?"
+  },
+  {
+   "id": "self-ref-title",
+   "name": "Section titles echoed",
+   "question": "Does any section open by repeating its own heading as the subject?"
+  },
+  {
+   "id": "sentence-length",
+   "name": "Uniform sentence length",
+   "question": "Read aloud: do most sentences run 15 to 25 words with the same shape?"
+  },
+  {
+   "id": "balance",
+   "name": "Structural balance",
+   "question": "Does every section get about the same space, whatever its importance?"
+  },
+  {
+   "id": "card-copy",
+   "name": "Parallel card copy",
+   "question": "Do the cards or bullets share one grammar and one length?"
+  },
+  {
+   "id": "keyword-mirror",
+   "name": "Job-ad mirroring",
+   "question": "Does any bullet echo the job posting's wording with no detail added?"
+  },
+  {
+   "id": "seamless-career",
+   "name": "Seamless career story",
+   "question": "Does the story admit at least one gap, pivot or setback?"
+  },
+  {
+   "id": "wrap-up",
+   "name": "Tidy summary",
+   "question": "Does the ending only restate what was already said?"
+  },
+  {
+   "id": "hedge-stance",
+   "name": "Hedge on everything",
+   "question": "Is every claim qualified, so nothing is stated flatly?"
+  },
+  {
+   "id": "facts",
+   "name": "Facts outrank voice",
+   "question": "Did the polish add any claim you have not verified?"
+  },
+  {
+   "id": "personality",
+   "name": "Flat register",
+   "question": "After cutting, is there still one opinion, one story or one joke?"
+  },
+  {
+   "id": "aloud",
+   "name": "Final read-aloud",
+   "question": "Read it aloud: would a person say it this way?"
+  }
+ ]
+}

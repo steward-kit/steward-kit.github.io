@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Writing checker: does it read like a machine wrote it</title>
+<style>
+:root{--bg:#fafaf7;--fg:#1d1d1b;--mut:#666;--card:#fff;--bd:#d8d6cf;--ac:#1d6f6b;--h1:#ffe08a;--h2:#ffc58a;--h3:#ff9c9c}
+@media (prefers-color-scheme:dark){:root{--bg:#161715;--fg:#ecebe6;--mut:#a3a29b;--card:#20211f;--bd:#3a3b38;--ac:#5fc9c2;--h1:#6b5a1c;--h2:#7a4a1c;--h3:#7a2a2a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0}
+p.sub{color:var(--mut);margin-top:0}
+textarea{width:100%;min-height:200px;padding:10px;font:inherit;background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;resize:vertical}
+button{font:inherit;padding:10px 18px;border-radius:8px;border:0;background:var(--ac);color:var(--bg);cursor:pointer;margin:8px 8px 8px 0}
+button.alt{background:transparent;color:var(--fg);border:1px solid var(--bd)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:12px;margin:12px 0}
+#out{white-space:pre-wrap;word-wrap:break-word}
+mark{border-radius:3px;padding:0 1px;color:inherit}
+mark.s1{background:var(--h1)}mark.s2{background:var(--h2)}mark.s3{background:var(--h3)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--bd);vertical-align:top}
+.score{font-size:1.4rem;font-weight:600}
+ul.j{list-style:none;padding:0;margin:0}ul.j li{padding:4px 0}
+footer{margin:24px 0 8px;color:var(--mut);display:flex;gap:16px;flex-wrap:wrap}
+a{color:var(--ac)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Does it read like a machine wrote it?</h1>
+<p class="sub">Paste your text. Everything runs in your browser. Nothing is sent anywhere.</p>
+<textarea id="in" placeholder="Paste an email, bio, cover letter or post here"></textarea>
+<div><button id="go">Check</button><button id="clr" class="alt">Clear</button></div>
+<section id="res" class="hide">
+<div class="card"><div class="score" id="score"></div><div id="verdict"></div><div id="stats" style="color:var(--mut);font-size:.9rem"></div></div>
+<div class="card"><strong>Highlighted text</strong> <span style="color:var(--mut);font-size:.85rem">(yellow minor, orange medium, red strong)</span><div id="out"></div></div>
+<div class="card"><strong>Hits by pattern</strong><table id="tbl"></table></div>
+</section>
+<div class="card"><strong>Judgment checklist</strong><p class="sub" style="margin:.2em 0 .6em">A program cannot decide these. Answer them yourself.</p><ul class="j" id="jl"></ul></div>
+<footer><a href="https://ko-fi.com/s/aced73a79f">Get the full rulebook</a><a href="https://ko-fi.com/secondpassclaims">Support this checker on Ko-fi</a></footer>
+</main>
+<script type="application/json" id="pdata">{
+ "version": 1,
+ "patterns": [
+  {
+   "id": "em-dash",
+   "name": "Long dash",
+   "kind": "regex",
+   "pattern": "\u2014|\u2013",
+   "severity": 2,
+   "tip": "Swap most long dashes for a period, comma or colon. Keep one per few paragraphs, only for a real interruption.",
+   "flags": "g"
+  },
+  {
+   "id": "spaced-dash",
+   "name": "Spaced hyphen used as a dash",
+   "kind": "regex",
+   "pattern": "\\S[ \\t]+--?[ \\t]+\\S",
+   "severity": 1,
+   "tip": "A spaced hyphen is a dash in disguise. Use a period or comma."
+  },
+  {
+   "id": "semicolon",
+   "name": "Semicolon",
+   "kind": "regex",
+   "pattern": ";",
+   "severity": 1,
+   "tip": "Semicolons stack up in generated drafts. Try a period.",
+   "flags": "g"
+  },
+  {
+   "id": "curly-quotes",
+   "name": "Curly quotes",
+   "kind": "regex",
+   "pattern": "[\u201c\u201d\u2018\u2019]",
+   "severity": 1,
+   "tip": "Fine if your editor curls quotes. A flag only when the whole text was pasted unedited.",
+   "flags": "g"
+  },
+  {
+   "id": "dash-stack",
+   "name": "Several dashes in one paragraph",
+   "kind": "regex",
+   "pattern": "\u2014[^\u2014\\n]*\u2014",
+   "severity": 2,
+   "tip": "Two dashes in one paragraph. Replace most with periods.",
+   "flags": "g"
+  },
+  {
+   "id": "colon-reveal",
+   "name": "Colon reveal",
+   "kind": "regex",
+   "pattern": "(?:^|[.!?]\\s+)(?:the\\s+)?(?:result|bottleneck|problem|answer|catch|truth|key|fix|upshot|takeaway|lesson|reality|solution|goal|point|secret)s?:\\s+\\S",
+   "severity": 2,
+   "tip": "Write the payoff as one plain sentence.",
+   "flags": "gim"
+  },
+  {
+   "id": "ai-vocab",
+   "name": "Machine vocabulary cluster",
+   "kind": "word",
+   "pattern": "delve[sd]?|delving|bolster(?:s|ed|ing)?|crucial(?:ly)?|garner(?:s|ed|ing)?|intricate|intricacies|meticulous(?:ly)?|underscor(?:e|es|ed|ing)|testament|vibrant|robust|leverag(?:e|es|ed|ing)|utiliz(?:e|es|ed|ing)|streamlin(?:e|es|ed|ing)|holistic|nuanced|pivotal|tapestry|paradigm|synerg(?:y|ies)|cutting-edge|game-changer|seamless(?:ly)?|multifaceted",
+   "severity": 2,
+   "tip": "One is a coincidence, three in a paragraph is a signature. Use the plain word."
+  },
+  {
+   "id": "ai-vocab-soft",
+   "name": "Soft machine vocabulary",
+   "kind": "word",
+   "pattern": "framework|landscape|ecosystem|navigat(?:e|es|ed|ing)|harness(?:es|ed|ing)?|elevat(?:e|es|ed|ing)|foster(?:s|ed|ing)?",
+   "severity": 1,
+   "tip": "Often fine alone. Check whether a plainer word works."
+  },
+  {
+   "id": "copula-dodge",
+   "name": "Copula avoidance",
+   "kind": "phrase",
+   "pattern": "serves as|serve as|stands as|stand as|acts as|functions as|represents a|marks a",
+   "severity": 2,
+   "tip": "Use \"is\"."
+  },
+  {
+   "id": "marketing-verbs",
+   "name": "Marketing verbs",
+   "kind": "word",
+   "pattern": "boast(?:s|ed|ing)?|showcas(?:e|es|ed|ing)|features a|boasts",
+   "severity": 2,
+   "tip": "Use \"has\", or describe the thing directly."
+  },
+  {
+   "id": "vague-connection",
+   "name": "Vague indirect connection",
+   "kind": "phrase",
+   "pattern": "in connection with|associated with|linked to|in collaboration with|in the context of",
+   "severity": 1,
+   "tip": "Say who did what."
+  },
+  {
+   "id": "not-just",
+   "name": "Not just X, but Y",
+   "kind": "regex",
+   "pattern": "\\b(?:not|isn['\u2019]t|aren['\u2019]t|don['\u2019]t|doesn['\u2019]t|wasn['\u2019]t)\\s+(?:just|only|merely|simply)\\b",
+   "severity": 2,
+   "tip": "State the real claim directly. Cut the denial."
+  },
+  {
+   "id": "negation-reframe",
+   "name": "It's not X, it's Y",
+   "kind": "regex",
+   "pattern": "\\b(?:it|this|that|we|they|you|i|there)(?:['\u2019](?:s|re|m|ve))?(?:\\s+(?:is|are|am))?\\s+not\\s+[^.!?\\n]{1,60}?[,\u2014\u2013;]\\s*(?:but\\s+)?(?:it|this|that|we|they|you|i|there)\\b",
+   "severity": 3,
+   "tip": "Say the point once, with no setup and negate."
+  },
+  {
+   "id": "rather-than",
+   "name": "Rather than hedge",
+   "kind": "phrase",
+   "pattern": "rather than",
+   "severity": 1,
+   "tip": "If the alternative nobody raised matters, say why. Otherwise cut it."
+  },
+  {
+   "id": "i-dont-just",
+   "name": "I don't just X, I Y",
+   "kind": "regex",
+   "pattern": "\\bI\\s+(?:don['\u2019]t|do not)\\s+(?:just|only|simply)\\b",
+   "severity": 3,
+   "tip": "Keep the second half and attach a number."
+  },
+  {
+   "id": "tricolon-adjectives",
+   "name": "Three adjectives in a row",
+   "kind": "regex",
+   "pattern": "\\b\\w+(?:able|ible|ive|ent|ant|ful|ous|al|ic|ly)\\b,\\s+\\w+(?:able|ible|ive|ent|ant|ful|ous|al|ic|ly)\\b,?\\s+(?:and|or)\\s+\\w+(?:able|ible|ive|ent|ant|ful|ous|al|ic|ly)\\b",
+   "severity": 1,
+   "tip": "Reflex triples. Keep a three only if you counted three things."
+  },
+  {
+   "id": "choppy-fragments",
+   "name": "Run of very short sentences",
+   "kind": "regex",
+   "pattern": "(?:^|(?<=[.!?]\\s))[A-Z][\\w'\u2019-]*(?:\\s[\\w'\u2019-]+){0,2}[.!]\\s+[A-Z][\\w'\u2019-]*(?:\\s[\\w'\u2019-]+){0,2}[.!]\\s+[A-Z][\\w'\u2019-]*(?:\\s[\\w'\u2019-]+){0,2}[.!]",
+   "severity": 2,
+   "tip": "Three tiny sentences in a row. Join them, or keep the one that earns a pause.",
+   "flags": "gm"
+  },
+  {
+   "id": "self-answered-question",
+   "name": "Question answered at once",
+   "kind": "regex",
+   "pattern": "[^.!?\\n]{4,70}\\?\\s+(?:[A-Z][^.!?\\n]{0,50}[.!])|\\bthe (?:real|actual|true|biggest|main) \\w+\\?|\\bever (?:wondered|asked yourself|wanted)\\b",
+   "severity": 2,
+   "tip": "Cut the question and lead with the answer."
+  },
+  {
+   "id": "recap-closer",
+   "name": "Recap closer",
+   "kind": "phrase",
+   "pattern": "in conclusion|to sum up|to summarize|in summary|overall, this|all in all|to wrap up|at the end of the day|in short,",
+   "severity": 2,
+   "tip": "Delete the recap or add one new fact."
+  },
+  {
+   "id": "hedge-phrases",
+   "name": "Hedging phrases",
+   "kind": "phrase",
+   "pattern": "can often|can be|may help|tends to|tend to|arguably|in some cases|to some extent|potentially|typically|generally speaking|it could be argued",
+   "severity": 1,
+   "tip": "Commit to the claim and give the evidence."
+  },
+  {
+   "id": "filler-transitions",
+   "name": "Filler transitions",
+   "kind": "phrase",
+   "pattern": "furthermore|moreover|additionally|crucially|notably|importantly|it's worth noting|it is worth noting|worth mentioning|indeed,",
+   "severity": 2,
+   "tip": "Delete, or use \"and\" and \"so\"."
+  },
+  {
+   "id": "ing-tackon",
+   "name": "Editorializing -ing clause",
+   "kind": "regex",
+   "pattern": ",\\s+(?:highlighting|showcasing|demonstrating|underscoring|reflecting|emphasizing|illustrating|reinforcing|ensuring|cementing|solidifying|exemplifying|signaling|contributing to|fostering|paving the way)\\b",
+   "severity": 3,
+   "tip": "Cut the clause or swap in a measured result."
+  },
+  {
+   "id": "heading-no-body",
+   "name": "Heading with no body",
+   "kind": "regex",
+   "pattern": "^#{1,6}[^\\n]*\\n+#{1,6}\\s",
+   "severity": 1,
+   "tip": "Add one real sentence under every heading.",
+   "flags": "gm"
+  },
+  {
+   "id": "showcasing-claim",
+   "name": "Claim of showing, no evidence",
+   "kind": "regex",
+   "pattern": "\\b(?:highlights?|demonstrates?|showcases?|reflects?|speaks? to|underscores?|illustrates?|exemplifies|reinforces?)\\s+(?:my|our|his|her|their|the)\\s+(?:\\w+\\s+){0,2}(?:skills?|abilities|ability|commitment|dedication|passion|expertise|strengths?|focus|capability|capabilities|importance)\\b",
+   "severity": 3,
+   "tip": "State the evidence instead of claiming it shows something."
+  },
+  {
+   "id": "significance-inflation",
+   "name": "Significance inflation",
+   "kind": "regex",
+   "pattern": "testament to|(?:played|plays|play) an? (?:key|crucial|vital|pivotal|significant|major) (?:role|part)|rich tapestry|indelible|enduring legacy|shaping the future|turning point|watershed|transformative|stands as an?",
+   "severity": 3,
+   "tip": "Name the checkable outcome."
+  },
+  {
+   "id": "vague-attribution",
+   "name": "Vague attribution",
+   "kind": "regex",
+   "pattern": "\\b(?:colleagues|experts|critics|observers|industry (?:leaders|experts)|studies|reviewers|clients|many people|some people)\\s+(?:have\\s+)?(?:say|said|praised|noted|argue|argued|suggest|suggested|show|shown|agree|called|described)\\b|widely (?:believed|regarded|considered)",
+   "severity": 2,
+   "tip": "Name the source or give the measured fact."
+  },
+  {
+   "id": "optimistic-close",
+   "name": "Faces-challenges, vague-optimism close",
+   "kind": "regex",
+   "pattern": "\\bdespite (?:these|the|its|such|any|some)\\s+(?:\\w+\\s+)?(?:challenges|setbacks|obstacles|limitations|hurdles)|always more to (?:build|do|learn)|where I am today|looking ahead|the future (?:looks|is) bright|excited (?:for|about) what(?:'s|\u2019s)? next|continues to (?:evolve|grow)",
+   "severity": 2,
+   "tip": "End on a concrete next step, or stop."
+  },
+  {
+   "id": "chat-register",
+   "name": "Chat register in a document",
+   "kind": "phrase",
+   "pattern": "let's dive|let\u2019s dive|let's explore|let's take a look|let's walk through|let's get started|let's jump in|let's look at",
+   "severity": 3,
+   "tip": "Write as a person describing their own work."
+  },
+  {
+   "id": "signposting",
+   "name": "Signposting",
+   "kind": "phrase",
+   "pattern": "let's break this down|let's unpack|here's the thing|here's where it gets|here's what you need to know|here's the kicker|buckle up|without further ado|dive into|deep dive",
+   "severity": 3,
+   "tip": "Just say the content."
+  },
+  {
+   "id": "sycophancy",
+   "name": "Flattery before the answer",
+   "kind": "regex",
+   "pattern": "\\b(?:great|excellent|fantastic|wonderful|good|fair|astute|insightful|smart)\\s+(?:question|point|instinct|idea|catch|observation|thinking)\\b|that['\u2019]s (?:such )?a (?:great|good|really)|you['\u2019]re (?:absolutely |completely )?right|you['\u2019]re really thinking|what a (?:great|fascinating|wonderful)",
+   "severity": 3,
+   "tip": "Skip the praise and answer. Disagree if the facts call for it."
+  },
+  {
+   "id": "over-politeness",
+   "name": "Apology hedging and sign-offs",
+   "kind": "phrase",
+   "pattern": "i hope this helps|hope that helps|i apologize for|apologies for any|sorry for any confusion|let me know if you have|feel free to reach out|don't hesitate to|happy to help|i'd be happy to",
+   "severity": 2,
+   "tip": "Cut the hedge and the sign-off. End on the last useful fact."
+  },
+  {
+   "id": "voice-fillers",
+   "name": "Humanizing filler sounds",
+   "kind": "regex",
+   "pattern": "\\b(?:um+|umm+|hmm+|uhh+|yee+ah|ahh+)\\b",
+   "severity": 1,
+   "tip": "Do not insert filler sounds to seem human. Speak plainly."
+  },
+  {
+   "id": "colon-list-dump",
+   "name": "Colon-led list dump",
+   "kind": "regex",
+   "pattern": "^[ \\t]*(?:\\*\\*)?[A-Z][\\w &/]{1,25}:(?:\\*\\*)?[ \\t]+[^,\\n:]+(?:,[^,\\n]+){3,}$",
+   "severity": 1,
+   "tip": "Write a real sentence or a real bulleted list.",
+   "flags": "gm"
+  },
+  {
+   "id": "bold-overuse",
+   "name": "Heavy bold in one paragraph",
+   "kind": "regex",
+   "pattern": "(?:\\*\\*[^*\\n]+\\*\\*[^*\\n]*){3,}",
+   "severity": 2,
+   "tip": "Bold at most one true key term per paragraph.",
+   "flags": "g"
+  },
+  {
+   "id": "bold-first-bullets",
+   "name": "Bold-first bullets",
+   "kind": "regex",
+   "pattern": "(?:^[ \\t]*[-*][ \\t]+\\*\\*[^*\\n]+\\*\\*[^\\n]*\\n){3,}",
+   "severity": 2,
+   "tip": "Bold only where it earns emphasis.",
+   "flags": "gm"
+  },
+  {
+   "id": "title-case-headers",
+   "name": "Title Case header",
+   "kind": "regex",
+   "pattern": "^#{1,6}[ \\t]+(?:[A-Z][a-z]+[ \\t]+){2,}[A-Z][a-z]+[ \\t]*$",
+   "severity": 1,
+   "tip": "Pick one heading style. Sentence case suits personal writing.",
+   "flags": "gm"
+  },
+  {
+   "id": "emoji",
+   "name": "Emoji",
+   "kind": "regex",
+   "pattern": "[\ud83c\udf00-\ud83e\udeff\u2600-\u27bf\u2b50]",
+   "severity": 1,
+   "tip": "Use real bullets. Keep at most one deliberate accent.",
+   "flags": "gu"
+  },
+  {
+   "id": "tool-artifacts",
+   "name": "Leftover chat tool artifacts",
+   "kind": "regex",
+   "pattern": "contentReference|oaicite|turn\\d+(?:search|view|file)\\d+|\\[oai_citation|utm_source=chatgpt\\.com|\u3010[^\u3011]*\u3011|\\[citation needed\\]",
+   "severity": 3,
+   "tip": "Delete pasted tool debris before sending."
+  },
+  {
+   "id": "alt-adjectives",
+   "name": "Adjective-stuffed alt text",
+   "kind": "regex",
+   "pattern": "\\balt=[\\\"'][^\\\"']*\\b(?:stunning|vibrant|sleek|beautiful|showcasing|captivating|gorgeous|dynamic)\\b",
+   "severity": 2,
+   "tip": "Describe what is visible, plainly."
+  },
+  {
+   "id": "diagram-inflation",
+   "name": "Inflated diagram labels",
+   "kind": "regex",
+   "pattern": "\\b(?:pivotal|central|critical|powerful|key)\\s+(?:\\w+\\s+)?(?:hub|engine|backbone|orchestrator|nerve center)\\b|powering the entire",
+   "severity": 2,
+   "tip": "Label by what it is and does."
+  },
+  {
+   "id": "hype-adjectives",
+   "name": "Hype adjectives",
+   "kind": "word",
+   "pattern": "passionate|results-driven|detail-oriented|self-starter|visionary|innovative|go-getter|team player|highly skilled|proven track record|dynamic",
+   "severity": 3,
+   "tip": "Open with your job function and one proof point."
+  },
+  {
+   "id": "jargon",
+   "name": "Corporate jargon",
+   "kind": "phrase",
+   "pattern": "thought leader|thought leadership|cross-functional|disruptor|moving the needle|move the needle|at the intersection of|seamlessly integrated|best-in-class|value-add|low-hanging fruit|circle back|world-class|drive innovation",
+   "severity": 2,
+   "tip": "Name the concrete thing the jargon stands for."
+  },
+  {
+   "id": "slogan-tagline",
+   "name": "Slogan tagline",
+   "kind": "regex",
+   "pattern": "\\bturning \\w+ into \\w+|\\btransforming \\w+ into \\w+|bridging the gap between|\\bwhere \\w+ meets \\w+",
+   "severity": 2,
+   "tip": "Use a plain title, one or two tools, one result."
+  },
+  {
+   "id": "closing-kicker",
+   "name": "Closing kicker",
+   "kind": "regex",
+   "pattern": "\\bbecause\\s+[^.!?\\n]{5,80}\\.\\s+(?:It|They|That|You)\\s+(?:should|must|will|won['\u2019]t|shouldn['\u2019]t)\\b[^.!?\\n]*\\.\\s*$|\\band that['\u2019]s (?:the|what)\\b",
+   "severity": 2,
+   "tip": "End on the last real fact.",
+   "flags": "gim"
+  },
+  {
+   "id": "punchy-not-fragments",
+   "name": "Not X. Not Y. Just Z.",
+   "kind": "regex",
+   "pattern": "\\bNot\\s+[^.!?\\n]{1,30}\\.\\s+Not\\s+[^.!?\\n]{1,30}\\.\\s+(?:Just|Only)\\b",
+   "severity": 3,
+   "tip": "Fold into one sentence.",
+   "flags": "g"
+  }
+ ],
+ "judgment": [
+  {
+   "id": "tricolon",
+   "name": "Rule of three",
+   "question": "Does every list in the piece have exactly three items?"
+  },
+  {
+   "id": "self-ref-title",
+   "name": "Section titles echoed",
+   "question": "Does any section open by repeating its own heading as the subject?"
+  },
+  {
+   "id": "sentence-length",
+   "name": "Uniform sentence length",
+   "question": "Read aloud: do most sentences run 15 to 25 words with the same shape?"
+  },
+  {
+   "id": "balance",
+   "name": "Structural balance",
+   "question": "Does every section get about the same space, whatever its importance?"
+  },
+  {
+   "id": "card-copy",
+   "name": "Parallel card copy",
+   "question": "Do the cards or bullets share one grammar and one length?"
+  },
+  {
+   "id": "keyword-mirror",
+   "name": "Job-ad mirroring",
+   "question": "Does any bullet echo the job posting's wording with no detail added?"
+  },
+  {
+   "id": "seamless-career",
+   "name": "Seamless career story",
+   "question": "Does the story admit at least one gap, pivot or setback?"
+  },
+  {
+   "id": "wrap-up",
+   "name": "Tidy summary",
+   "question": "Does the ending only restate what was already said?"
+  },
+  {
+   "id": "hedge-stance",
+   "name": "Hedge on everything",
+   "question": "Is every claim qualified, so nothing is stated flatly?"
+  },
+  {
+   "id": "facts",
+   "name": "Facts outrank voice",
+   "question": "Did the polish add any claim you have not verified?"
+  },
+  {
+   "id": "personality",
+   "name": "Flat register",
+   "question": "After cutting, is there still one opinion, one story or one joke?"
+  },
+  {
+   "id": "aloud",
+   "name": "Final read-aloud",
+   "question": "Read it aloud: would a person say it this way?"
+  }
+ ]
+}</script>
+<script>
+(function(){
+var DATA=JSON.parse(document.getElementById('pdata').textContent);
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function build(p){
+ var pat=p.pattern,fl=p.flags||'gi';
+ if(p.kind==='word')pat='\\b(?:'+pat+')\\b';
+ else if(p.kind==='phrase')pat='(?<![\\w])(?:'+pat.split('|').map(function(x){return esc(x).replace(/'/g,"['\u2019]");}).join('|')+')(?![\\w])';
+ try{return new RegExp(pat,fl);}catch(e){return null;}
+}
+var RX=DATA.patterns.map(function(p){return {p:p,re:build(p)};}).filter(function(x){return x.re;});
+var jl=document.getElementById('jl');
+DATA.judgment.forEach(function(j){var li=document.createElement('li');var l=document.createElement('label');var c=document.createElement('input');c.type='checkbox';c.style.marginRight='8px';l.appendChild(c);l.appendChild(document.createTextNode(j.question));li.appendChild(l);jl.appendChild(li);});
+function run(){
+ var t=document.getElementById('in').value;
+ var words=(t.match(/\S+/g)||[]).length;
+ if(!words){document.getElementById('res').classList.add('hide');return;}
+ var hits=[],counts={},total=0;
+ RX.forEach(function(x){
+  x.re.lastIndex=0;var m,n=0;
+  while((m=x.re.exec(t))!==null){
+   if(m[0].length===0){x.re.lastIndex++;continue;}
+   hits.push({s:m.index,e:m.index+m[0].length,sev:x.p.severity});n++;
+  }
+  if(n){counts[x.p.id]=n;total+=n;}
+ });
+ hits.sort(function(a,b){return a.s-b.s||b.sev-a.sev;});
+ var out=document.getElementById('out');out.textContent='';
+ var pos=0;
+ hits.forEach(function(h){
+  if(h.s<pos){return;}
+  if(h.s>pos)out.appendChild(document.createTextNode(t.slice(pos,h.s)));
+  var mk=document.createElement('mark');mk.className='s'+h.sev;mk.textContent=t.slice(h.s,h.e);out.appendChild(mk);pos=h.e;
+ });
+ if(pos<t.length)out.appendChild(document.createTextNode(t.slice(pos)));
+ var per=total*100/words;
+ document.getElementById('score').textContent=per.toFixed(1)+' hits per 100 words ('+total+' hits, '+words+' words)';
+ var v=per<0.5?'Reads clean on the mechanical checks.':per<2?'A few tells. Fix the highlighted ones.':per<5?'Noticeable tells. Rework the highlighted passages.':'Heavy. This reads machine-written.';
+ document.getElementById('verdict').textContent=v;
+ var sents=t.split(/(?<=[.!?])\s+/).map(function(s){return (s.match(/\S+/g)||[]).length;}).filter(function(n){return n>0;});
+ var st='';
+ if(sents.length>=6){var mean=sents.reduce(function(a,b){return a+b;},0)/sents.length;var sd=Math.sqrt(sents.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/sents.length);st='Sentence length: mean '+mean.toFixed(1)+' words, spread '+sd.toFixed(1)+(sd<5?' (flat rhythm, vary it)':' (varied)');}
+ document.getElementById('stats').textContent=st;
+ var rows=Object.keys(counts).map(function(id){var p=DATA.patterns.filter(function(q){return q.id===id;})[0];return {p:p,n:counts[id]};});
+ rows.sort(function(a,b){return b.p.severity-a.p.severity||b.n-a.n;});
+ var tb=document.getElementById('tbl');tb.textContent='';
+ if(!rows.length){var r=tb.insertRow();r.insertCell().textContent='No pattern hits.';}
+ else{var hr=tb.insertRow();['Pattern','Hits','Severity','What to do'].forEach(function(h){var th=document.createElement('th');th.textContent=h;hr.appendChild(th);});
+  rows.forEach(function(r){var tr=tb.insertRow();tr.insertCell().textContent=r.p.name;tr.insertCell().textContent=r.n;tr.insertCell().textContent=r.p.severity;tr.insertCell().textContent=r.p.tip;});}
+ document.getElementById('res').classList.remove('hide');
+}
+document.getElementById('go').addEventListener('click',run);
+document.getElementById('clr').addEventListener('click',function(){document.getElementById('in').value='';document.getElementById('res').classList.add('hide');});
+})();
+</script>
+</body>
+</html>

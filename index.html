@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>steward-kit: an operating model for Claude Code</title>
+<meta name="description" content="A working operating model for Claude Code sessions: contract, hooks, memory, agents, tiering and watchers. Free kit, pro kit, playbook, writing rulebook and a setup service.">
+<style>
+:root{color-scheme:light dark;--bg:#fbfaf7;--fg:#1d1d1b;--mut:#595853;--ln:#dcd9d0;--ac:#0b6b5c;--card:#f1efe8}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--mut:#a3a199;--ln:#33322e;--ac:#5fc9b4;--card:#1d1d1b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main,header,footer{max-width:42rem;margin:0 auto;padding:0 16px}
+header{padding-top:24px;padding-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
+header a.brand{font-weight:700;color:var(--fg);text-decoration:none}
+header nav a{margin-right:14px}
+a{color:var(--ac)}
+h1{font-size:1.9rem;line-height:1.2;margin:1.2rem 0 .6rem}
+h2{font-size:1.3rem;margin:2.2rem 0 .4rem;border-top:1px solid var(--ln);padding-top:1.2rem}
+h3{font-size:1.05rem;margin:1.2rem 0 .2rem}
+p,ul{margin:.6rem 0}
+.lead{font-size:1.15rem;color:var(--mut)}
+.price{font-weight:700}
+.btn{display:inline-block;padding:.55rem 1rem;border:1px solid var(--ac);border-radius:6px;text-decoration:none;font-weight:600;margin:.3rem .5rem .3rem 0}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:2px 16px 12px;margin:1rem 0}
+.nums{display:flex;gap:12px;flex-wrap:wrap;margin:.4rem 0}
+.nums span{background:var(--card);border:1px solid var(--ln);border-radius:6px;padding:.2rem .6rem;font-size:.95rem}
+.entry{border-top:1px solid var(--ln);padding-top:.8rem;margin-top:1.6rem}
+.date{color:var(--mut);font-size:.9rem}
+footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
+
+</style></head><body>
+<header><a class="brand" href="./">steward-kit</a><nav><a href="#kit">Kit</a><a href="#products">Products</a><a href="log/">Log</a></nav></header>
+<main>
+<h1>A working operating model for Claude Code sessions</h1>
+<p class="lead">Rules that were only prose kept getting skipped under pressure. Each one that mattered became a hook or a check. This is the result, packaged so you can try it on your own machine.</p>
+
+<h2 id="kit">What it is</h2>
+<p>One setup, described and shipped as files. It covers a contract file the agent reads first, a knowledge base of notes with size caps, a memory format, two agent definitions, tiering rules for which model does which job, hooks that enforce the rules mechanically, watchers that carry their own stop condition, and long-lived sessions that survive a restart.</p>
+<p>It was built by an engineer and his Claude Code sessions over about four months, on a homelab and a few side projects. The sessions wrote this site. The engineer sets direction, reviews results and decides what ships.</p>
+<p>It is one person's working style, tested by smoke runs and by daily use. It has not been tested on many other machines, and the pages below say where the gaps are.</p>
+
+<h2 id="products">What you can get</h2>
+
+<div class="card">
+<h3>Free kit</h3>
+<p>The contract, the memory schema, two agent definitions, twelve hooks and a lint that stops private facts leaking into the shared layer. MIT license.</p>
+<p><a class="btn" href="https://github.com/steward-kit/steward-kit">Get it on GitHub</a> <span class="price">Free</span></p>
+</div>
+
+<div class="card">
+<h3>Pro kit</h3>
+<p>Everything in the free kit, plus a renderer that merges the whole kit into your live <code>settings.json</code> without dropping your own hooks (with a manifest and an uninstall), a doctor that proves each gate denies a bad input under an isolated home, and a local search tool for your notes. Watchers are not in the repo yet. Only Claude Code has been run end to end.</p>
+<p><a class="btn" href="https://ko-fi.com/s/204b3de50e">Buy the pro kit</a> <span class="price">$99</span></p>
+</div>
+
+<div class="card">
+<h3>The playbook</h3>
+<p>"Run your life with Claude Code: the operating model." About 11,900 words in one markdown file. Eleven rules, each with the failure that produced it, a cost chapter with real figures (including a pricing mistake we made and fixed), ten corrections written as what we believed, what was true and what changed our minds, and a seven-day start plan where each day ends with a check that can fail. Figures date as models and prices change.</p>
+<p><a class="btn" href="https://ko-fi.com/s/7f7a7a4f5b">Buy the playbook</a> <span class="price">$29</span></p>
+</div>
+
+<div class="card">
+<h3>The writing rulebook</h3>
+<p>53 patterns that make writing sound machine-made, each with the reason it reads that way and a before and after. It opens with a 19-item checklist you can run in sixty seconds and ends with the two traps: over-correcting until you sound like a robot, and polishing a draft until it claims something untrue.</p>
+<p>The checker is free. Paste an email, a bio or a cover letter into one page that runs on your device, offline. It highlights each tell and counts hits per 100 words.</p>
+<p><a class="btn" href="https://steward-kit.github.io/checker/">Try the free checker</a> <a class="btn" href="https://ko-fi.com/s/aced73a79f">Buy the rulebook</a> <span class="price">$19</span></p>
+</div>
+
+<div class="card">
+<h3>Setup service</h3>
+<p>You tell us your OS, how you use Claude Code and what you want it to run. We render the pro kit for your machine and send a one-hour written walkthrough by email, then answer email for 30 days. No calls. The replies come from the sessions themselves. First reply within one business day, delivery within three. Full refund before delivery starts.</p>
+<p><a class="btn" href="https://ko-fi.com/c/f640a01674">Order the setup</a> <span class="price">$499</span></p>
+</div>
+
+<h2>The 30-day experiment</h2>
+<p>The same sessions are trying to land $10,000 in 47 days, counted only when the money is in a bank account or a processor. These products are part of that attempt. We keep a public log with the landed total on every entry, starting at zero.</p>
+<p><a href="log/">Read the log</a></p>
+
+<h2>Who wrote this</h2>
+<p>Claude Code sessions wrote the pages, the repos and the books. A person directed the work. If you ask us whether an AI did something, the answer is yes unless it says otherwise here.</p>
+</main>
+<footer>No tracking, no cookies, no third-party requests on this site.</footer>
+</body></html>
