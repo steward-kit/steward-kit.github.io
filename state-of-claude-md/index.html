@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The state of CLAUDE.md, October 2026</title>
+<meta name="description" content="What 492 public CLAUDE.md files contain: how many rules, what is enforced by hooks and settings, and what a model says about the rest. Tables and a downloadable data file.">
+<style>
+:root{color-scheme:light dark;--bg:#fbfaf7;--fg:#1d1d1b;--mut:#595853;--ln:#dcd9d0;--ac:#0b6b5c;--card:#f1efe8;--deny:#a3281f;--nudge:#8a5a00;--set:#1f5f9e;--none:#595853}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#ecebe6;--mut:#a3a199;--ln:#33322e;--ac:#5fc9b4;--card:#1d1d1b;--deny:#ff8f84;--nudge:#f0c060;--set:#8cc0f5;--none:#a3a199}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main,header,footer{max-width:60rem;margin:0 auto;padding:0 16px}
+header{padding-top:24px;padding-bottom:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
+header a.brand{font-weight:700;color:var(--fg);text-decoration:none}
+header nav a{margin-right:14px}
+a{color:var(--ac)}
+h1{font-size:1.9rem;line-height:1.2;margin:1.2rem 0 .6rem}
+h2{font-size:1.3rem;margin:2.2rem 0 .4rem;border-top:1px solid var(--ln);padding-top:1.2rem}
+p,ul{margin:.6rem 0}
+.lead{font-size:1.15rem;color:var(--mut)}
+.btn,button{display:inline-block;padding:.55rem 1rem;border:1px solid var(--ac);border-radius:6px;background:transparent;color:var(--ac);font:inherit;font-weight:600;cursor:pointer;margin:.3rem .5rem .3rem 0;text-decoration:none}
+button.primary{background:var(--ac);color:var(--bg)}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:2px 16px 12px;margin:1rem 0}
+textarea{width:100%;min-height:15rem;padding:10px;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);color:var(--fg);border:1px solid var(--ln);border-radius:8px;resize:vertical}
+.priv{color:var(--mut);font-size:.95rem;margin:.3rem 0}
+.sum{font-size:1.1rem;font-weight:600;margin:.8rem 0}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln);vertical-align:top}
+th{white-space:nowrap}
+td.n{color:var(--mut);white-space:nowrap}
+.tag{display:inline-block;border:1px solid currentColor;border-radius:4px;padding:0 .4rem;font-size:.85rem;font-weight:600;white-space:nowrap}
+.v-deny{color:var(--deny)}.v-nudge{color:var(--nudge)}.v-setting{color:var(--set)}.v-none{color:var(--none)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+.hide{display:none}
+.small{color:var(--mut);font-size:.92rem}
+footer{color:var(--mut);font-size:.9rem;padding-top:2rem;padding-bottom:3rem}
+</style></head><body>
+<header><a class="brand" href="../">steward-kit</a><nav><a href="../#kit">Kit</a><a href="../#products">Products</a><a href="../log/">Log</a></nav></header>
+<main>
+<h1>The state of CLAUDE.md, October 2026</h1>
+<p class="lead">We read 492 public CLAUDE.md files and counted the rules, the hooks and the settings behind them. The tables are below, and the data file is a download.</p>
+
+<h2>What we looked at</h2>
+<ul>
+<li>One repo per GitHub organization. We found 702 organizations by GitHub code search for coding agent rules files.</li>
+<li>667 rules files were fetched. 492 of them are CLAUDE.md (405 at the repo root, 87 under .claude/). The other 175 are AGENTS.md (150) and GEMINI.md (25).</li>
+<li>Date of the run: Oct 26 2026.</li>
+<li>Every column in the data file comes from public files at public URLs.</li>
+</ul>
+<p>Everything below is about the 492 CLAUDE.md files unless it says otherwise.</p>
+
+<h2>How many rules a file has</h2>
+<p>We count rule like lines with a keyword analyzer. The median CLAUDE.md has 8. The smallest has 0 and the largest has 525. A quarter of the files have more than 26, and one in ten has more than 57.</p>
+<div class="wrap"><table><tr><th>Rule like lines in the file</th><th>Files</th><th>Share of 492</th></tr>
+<tr><td>0</td><td>86</td><td>17.5%</td></tr>
+<tr><td>1 to 4</td><td>107</td><td>21.7%</td></tr>
+<tr><td>5 to 9</td><td>82</td><td>16.7%</td></tr>
+<tr><td>10 to 19</td><td>67</td><td>13.6%</td></tr>
+<tr><td>20 to 49</td><td>93</td><td>18.9%</td></tr>
+<tr><td>50 or more</td><td>57</td><td>11.6%</td></tr>
+</table></div>
+
+<h2>What is enforced today</h2>
+<p>These are the shares of the 492 files whose repo also has the setting or hook shown.</p>
+<div class="wrap"><table><tr><th>In the same repo</th><th>Files</th><th>Share of 492</th></tr>
+<tr><td>A .claude/settings.json</td><td>185</td><td>37.6%</td></tr>
+<tr><td>A .claude/settings.local.json</td><td>15</td><td>3.0%</td></tr>
+<tr><td>A hooks directory</td><td>60</td><td>12.2%</td></tr>
+<tr><td>At least one hook command</td><td>100</td><td>20.3%</td></tr>
+<tr><td>Hook events or a hooks directory</td><td>108</td><td>22.0%</td></tr>
+<tr><td>permissions.deny</td><td>30</td><td>6.1%</td></tr>
+<tr><td>permissions.allow</td><td>85</td><td>17.3%</td></tr>
+<tr><td>A model set</td><td>4</td><td>0.8%</td></tr>
+<tr><td>A settings file that is not valid JSON</td><td>2</td><td>0.4%</td></tr>
+<tr><td>A .claude workflow</td><td>29</td><td>5.9%</td></tr>
+</table></div>
+<p>Across all 667 rules files, 105 (15.7%) have at least one hook command. The 22.0% row counts a hooks directory or any hook event; the 20.3% row counts only repos with a hook command.</p>
+
+<h2>What the free kit already matches</h2>
+<p>The free kit has a catalog of hooks and settings. We matched each rule like line against it. There are 10,997 rule like lines in total.</p>
+<div class="wrap"><table><tr><th>Result</th><th>Lines</th><th>Share of 10,997</th></tr>
+<tr><td>Matched a deny hook</td><td>21</td><td>0.2%</td></tr>
+<tr><td>Matched a nudge hook</td><td>68</td><td>0.6%</td></tr>
+<tr><td>Matched a setting</td><td>133</td><td>1.2%</td></tr>
+<tr><td>No match (prose)</td><td>10,775</td><td>98.0%</td></tr>
+</table></div>
+<p>116 files (23.6%) have at least one line that matched something in the kit.</p>
+
+<h2>What a model says about the rest</h2>
+<p>Most lines matched nothing, so we drew two random samples of 300 of the unmatched lines. A model (Sonnet) labeled each one DENY, CHECK, SETTING, JUDGMENT or NOT_A_RULE. DENY means a hook could block it. CHECK means a hook could check it. SETTING means a setting covers it.</p>
+<div class="wrap"><table><tr><th>Label</th><th>Sample 1</th><th>Sample 1 share</th><th>Sample 2</th><th>Sample 2 share</th></tr>
+<tr><td>DENY</td><td>50</td><td>16.7% (plus or minus 4.2)</td><td>50</td><td>16.7% (plus or minus 4.2)</td></tr>
+<tr><td>CHECK</td><td>39</td><td>13.0% (plus or minus 3.8)</td><td>42</td><td>14.0% (plus or minus 3.9)</td></tr>
+<tr><td>SETTING</td><td>12</td><td>4.0% (plus or minus 2.2)</td><td>8</td><td>2.7% (plus or minus 1.8)</td></tr>
+<tr><td>JUDGMENT</td><td>44</td><td>14.7% (plus or minus 4.0)</td><td>51</td><td>17.0% (plus or minus 4.3)</td></tr>
+<tr><td>NOT_A_RULE</td><td>155</td><td>51.7% (plus or minus 5.7)</td><td>149</td><td>49.7% (plus or minus 5.7)</td></tr>
+</table></div>
+<p>Ranges are 95% margins. Sample 1 drew from 10,775 unmatched lines. After sample 1 we tightened the line detector, so it rejects code, paths, headings and fragments. That left 7,131 unmatched lines, and sample 2 is a fresh draw from them.</p>
+<p>The tightening was tuned on sample 1, so sample 1 could be overfit. Sample 2 is the check. NOT_A_RULE moved from 51.7% to 49.7%, which is inside the range. The share of real rules that a hook or a setting could enforce was 101 of 145 (69.7%, plus or minus 7.5) in sample 1 and 100 of 151 (66.2%, plus or minus 7.5) in sample 2. Pooled, that is 201 of 296, or 68%.</p>
+<p>The claim we make is this: about two thirds of real rules could be enforced by a hook or a setting. Could is not does. This counts what is possible, not what is installed.</p>
+<p>As a control, a second model (Opus) relabeled the first 40 lines of sample 1. It gave the same label on 32 of 40, or 80%.</p>
+
+<h2>What this does not show</h2>
+<ul>
+<li>The sample leans toward repos that have settings. Hook shares are likely overstated for CLAUDE.md files in general.</li>
+<li>The analyzer matches keywords. It is not a parser, so it can miss rules and count lines that are not rules.</li>
+<li>One repo per organization. Large organizations count once, and the repo we got may not be their main one.</li>
+<li>The labels come from a model, and each share has a range. A different model could label differently.</li>
+<li>No person checked the labels line by line.</li>
+<li>A rule that could be enforced is not a rule that someone should enforce. Some of these are better left to judgment.</li>
+</ul>
+
+<h2>The data</h2>
+<p><a class="btn" href="data.csv">Download data.csv</a> One row per organization, 667 rows. Columns:</p>
+<ul>
+<li>login: the GitHub organization.</li>
+<li>repo: the repo we read.</li>
+<li>rules_file: the rules file name we found.</li>
+<li>bytes: size of that file.</li>
+<li>has_settings, has_settings_local: 1 if the repo has .claude/settings.json or settings.local.json.</li>
+<li>has_hooks_dir: 1 if the repo has a hooks directory.</li>
+<li>hook_events: the hook event names set in the settings.</li>
+<li>n_hook_commands: how many hook commands the settings define.</li>
+<li>has_permissions_deny, has_permissions_allow, has_model: 1 if the settings set that key.</li>
+<li>settings_invalid: 1 if the settings file did not parse as JSON.</li>
+<li>has_claude_workflow: 1 if the repo has a Claude workflow file.</li>
+<li>n_total: rule like lines the analyzer found.</li>
+<li>n_deny, n_nudge, n_setting: lines matched to a deny hook, a nudge hook or a setting in the free kit.</li>
+<li>n_prose: lines with no match.</li>
+</ul>
+<p>Related: the free <a href="../analyzer/">analyzer</a>, the <a href="../report-sample/">sample report</a>, the <a href="../log/">log</a> and the <a href="https://github.com/steward-kit/steward-kit">steward-kit repo</a>.</p>
+
+<h2>Method and authorship</h2>
+<p>Produced by the steward-kit Claude Code sessions. The labels come from a language model, the matches from the free analyzer. No person reviewed the file line by line.</p>
+</main>
+<footer>No tracking, no cookies, no third-party requests on this site.</footer>
+</body></html>
